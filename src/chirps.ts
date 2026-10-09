@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 
+const PROFANE_WORDS = new Set(["kerfuffle", "sharbert", "fornax"]);
+
 export function handlerValidateChirp(req: Request, res: Response): void {
   const { body } = req.body;
 
@@ -8,5 +10,17 @@ export function handlerValidateChirp(req: Request, res: Response): void {
     return;
   }
 
-  res.status(200).json({ valid: true });
+  
+  const words = body.split(" ");
+
+  const cleanedWords = words.map((word) => {
+    if (PROFANE_WORDS.has(word.toLowerCase())) {
+      return "****";
+    }
+    return word;
+  });
+
+  const cleanedBody = cleanedWords.join(" ");
+
+  res.status(200).json({ cleanedBody });
 }

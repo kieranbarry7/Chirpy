@@ -10,6 +10,7 @@ app.use(express.json());
 
 app.use(middlewareLogResponses);
 
+
 app.use("/app", middlewareMetricsInc);
 app.use("/app", express.static("./src/app"));
 
@@ -18,8 +19,10 @@ function handlerReadiness(req: Request, res: Response) {
   res.send("OK");
 }
 
+
 app.get("/api/healthz", handlerReadiness);
 app.post("/api/validate_chirp", handlerValidateChirp);
+
 
 app.get("/admin/metrics", handlerMetrics);
 app.post("/admin/reset", handlerReset);
