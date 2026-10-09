@@ -7,7 +7,7 @@ const PORT = 8080;
 
 app.use(middlewareLogResponses);
 
-// Step 4: Run metrics middleware on /app before serving files
+
 app.use("/app", middlewareMetricsInc);
 app.use("/app", express.static("./src/app"));
 
@@ -16,11 +16,10 @@ function handlerReadiness(req: Request, res: Response) {
   res.send("OK");
 }
 
-app.get("/healthz", handlerReadiness);
+app.get("/api/healthz", handlerReadiness);
 
-// Step 6 & 7: Register metrics and reset endpoints
-app.get("/metrics", handlerMetrics);
-app.get("/reset", handlerReset);
+app.get("/admin/metrics", handlerMetrics);
+app.post("/admin/reset", handlerReset);
 
 app.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT}`);
