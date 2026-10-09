@@ -1,5 +1,5 @@
-import express, { Request, Response } from "express";
-import { middlewareLogResponses } from "./middleware.js";
+import express, { Request, Response, NextFunction } from "express";
+import { middlewareLogResponses, middlewareErrorHandler } from "./middleware.js";
 import { middlewareMetricsInc, handlerMetrics, handlerReset } from "./metrics.js";
 import { handlerValidateChirp } from "./chirps.js";
 
@@ -7,7 +7,6 @@ const app = express();
 const PORT = 8080;
 
 app.use(express.json());
-
 app.use(middlewareLogResponses);
 
 
@@ -21,11 +20,16 @@ function handlerReadiness(req: Request, res: Response) {
 
 
 app.get("/api/healthz", handlerReadiness);
-app.post("/api/validate_chirp", handlerValidateChirp);
 
+
+app.post("/api/validate_chirp", (req: Request, res: Response, next: NextFunction) => {
+  Promise.resolve(handlerValidateChirp(req, res)).catch(next);
+});
 
 app.get("/admin/metrics", handlerMetrics);
 app.post("/admin/reset", handlerReset);
+
+app.use(middlewareErrorHandler);
 
 app.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT}`);
