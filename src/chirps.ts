@@ -1,13 +1,18 @@
 import { Request, Response } from "express";
 import { BadRequestError } from "./errors.js";
+import { createChirp } from "./db/queries/chirps.js";
 
 const PROFANE_WORDS = new Set(["kerfuffle", "sharbert", "fornax"]);
 
-export async function handlerValidateChirp(req: Request, res: Response): Promise<void> {
-  const { body } = req.body;
+export async function handlerCreateChirp(req: Request, res: Response): Promise<void> {
+  const { body, userId } = req.body;
 
   if (typeof body !== "string" || body.length > 140) {
     throw new BadRequestError("Chirp is too long. Max length is 140");
+  }
+
+  if (!userId) {
+    throw new BadRequestError("User ID is required");
   }
 
   const words = body.split(" ");
@@ -17,8 +22,18 @@ export async function handlerValidateChirp(req: Request, res: Response): Promise
     }
     return word;
   });
-
   const cleanedBody = cleanedWords.join(" ");
 
-  res.status(200).json({ cleanedBody });
+  const newChirp = await createChirp({
+    body: cleanedBody,
+    userId,
+  });
+
+  res.status(201).json({
+    id: newChirp.id,
+    createdAt: newChirp.createdAt,
+    updatedAt: newChirp.updatedAt,
+    body: newChirp.body,
+    userId: newChirp.userId,
+  });
 }

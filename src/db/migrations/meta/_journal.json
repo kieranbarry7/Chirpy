@@ -8,6 +8,13 @@
       "when": 1791805587921,
       "tag": "0000_magenta_firedrake",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791814852635,
+      "tag": "0001_strange_vertigo",
+      "breakpoints": true
     }
   ]
 }

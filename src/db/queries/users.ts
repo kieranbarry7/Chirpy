@@ -11,5 +11,7 @@ export async function createUser(user: NewUser) {
 }
 
 export async function deleteAllUsers() {
+  console.log("-> Attempting to delete all users from database...");
   await db.delete(users);
+  console.log("-> Successfully deleted all users.");
 }

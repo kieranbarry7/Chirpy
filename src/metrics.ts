@@ -13,12 +13,19 @@ export function handlerMetrics(req: Request, res: Response) {
 }
 
 export async function handlerReset(req: Request, res: Response) {
+  console.log("--> INCOMING REQUEST: /admin/reset hit!");
+
   if (config.platform !== "dev") {
+    console.log("--> Platform is not dev, returning 403. Current platform:", config.platform);
     return res.status(403).send("Forbidden");
   }
 
+  console.log("--> Platform is dev. Starting database deletion...");
   await deleteAllUsers();
+  console.log("--> Users deleted. Resetting hits counter...");
+
   config.fileserverHits = 0;
   res.setHeader("Content-Type", "text/plain; charset=utf-8");
+  console.log("--> Response sent successfully.");
   return res.send("Reset successful");
 }
