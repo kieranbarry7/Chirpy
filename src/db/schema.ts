@@ -1,13 +1,12 @@
-import { pgTable, timestamp, varchar, uuid, text } from "drizzle-orm/pg-core";
+import { pgTable, uuid, varchar, timestamp, text } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at")
-    .notNull()
-    .defaultNow()
-    .$onUpdate(() => new Date()),
-  email: varchar("email", { length: 256 }).unique().notNull(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  email: varchar("email").notNull().unique(),
+  // Add non-null VARCHAR column with default "unset"
+  hashedPassword: varchar("hashed_password").notNull().default("unset"),
 });
 
 export type NewUser = typeof users.$inferInsert;
