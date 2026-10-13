@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { BadRequestError } from "./errors.js";
-import { createChirp } from "./db/queries/chirps.js";
+import { createChirp, getChirps } from "./db/queries/chirps.js";
 
 const PROFANE_WORDS = new Set(["kerfuffle", "sharbert", "fornax"]);
 
@@ -36,4 +36,9 @@ export async function handlerCreateChirp(req: Request, res: Response): Promise<v
     body: newChirp.body,
     userId: newChirp.userId,
   });
+}
+
+export async function handlerGetChirps(req: Request, res: Response): Promise<void> {
+  const allChirps = await getChirps();
+  res.status(200).json(allChirps);
 }

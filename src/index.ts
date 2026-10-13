@@ -5,7 +5,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import { config } from "./config.js";
 import { middlewareLogResponses, middlewareErrorHandler } from "./middleware.js";
 import { middlewareMetricsInc, handlerMetrics, handlerReset } from "./metrics.js";
-import { handlerCreateChirp } from "./chirps.js";
+import { handlerCreateChirp, handlerGetChirps } from "./chirps.js";
 import { handlerCreateUser } from "./users.js";
 
 const app = express();
@@ -23,6 +23,10 @@ function handlerReadiness(req: Request, res: Response) {
 }
 
 app.get("/api/healthz", handlerReadiness);
+
+app.get("/api/chirps", (req: Request, res: Response, next: NextFunction) => {
+  Promise.resolve(handlerGetChirps(req, res)).catch(next);
+});
 
 app.post("/api/chirps", (req: Request, res: Response, next: NextFunction) => {
   Promise.resolve(handlerCreateChirp(req, res)).catch(next);
@@ -45,12 +49,11 @@ async function start() {
     const migrationClient = postgres(config.db.url, { max: 1 });
     await migrate(drizzle(migrationClient), config.db.migrationConfig);
     console.log("2. Migrations complete. Binding Express listener...");
-
     app.listen(PORT, () => {
       console.log(`3. Server is running at http://localhost:${PORT}`);
     });
   } catch (error) {
-    console.error("CRITICAL STARTUP ERROR:", error);
+    console.error("Failed to start server:", error);
     process.exit(1);
   }
 }
