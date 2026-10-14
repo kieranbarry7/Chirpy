@@ -31,6 +31,18 @@ export async function updateUser(userId: string, email: string, hashedPassword: 
   return updatedUser;
 }
 
+export async function upgradeUserToChirpyRed(userId: string) {
+  const [updatedUser] = await db
+    .update(users)
+    .set({
+      isChirpyRed: true,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.id, userId))
+    .returning();
+  return updatedUser;
+}
+
 export async function deleteAllUsers() {
   await db.delete(users);
 }

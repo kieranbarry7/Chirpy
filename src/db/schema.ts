@@ -1,45 +1,27 @@
-import { pgTable, uuid, varchar, timestamp, text } from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, timestamp, boolean } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-  email: varchar("email").notNull().unique(),
-  // Add non-null VARCHAR column with default "unset"
-  hashedPassword: varchar("hashed_password").notNull().default("unset"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  email: text("email").notNull().unique(),
+  hashedPassword: text("hashed_password").notNull(),
+  isChirpyRed: boolean("is_chirpy_red").notNull().default(false),
 });
-
-export type NewUser = typeof users.$inferInsert;
 
 export const chirps = pgTable("chirps", {
   id: uuid("id").primaryKey().defaultRandom(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   body: text("body").notNull(),
-  userId: uuid("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at")
-    .notNull()
-    .defaultNow()
-    .$onUpdate(() => new Date()),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
 });
-
-export type Chirp = typeof chirps.$inferSelect;
-export type NewChirp = typeof chirps.$inferInsert;
 
 export const refreshTokens = pgTable("refresh_tokens", {
   token: text("token").primaryKey(),
-  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { mode: "date" })
-    .notNull()
-    .defaultNow()
-    .$onUpdate(() => new Date()),
-  userId: uuid("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  expiresAt: timestamp("expires_at", { mode: "date" }).notNull(),
-  revokedAt: timestamp("revoked_at", { mode: "date" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  revokedAt: timestamp("revoked_at", { withTimezone: true }),
 });
-
-export type RefreshToken = typeof refreshTokens.$inferSelect;
-export type NewRefreshToken = typeof refreshTokens.$inferInsert;

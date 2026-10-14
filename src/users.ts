@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { createUser, getUserByEmail, updateUser } from "./db/queries/users.js";
+import { createUser, getUserByEmail, updateUser, upgradeUserToChirpyRed } from "./db/queries/users.js";
 import { hashPassword, checkPasswordHash, makeJWT, makeRefreshToken, getBearerToken, validateJWT } from "./auth.js";
 import { createRefreshToken, getRefreshToken, revokeRefreshToken } from "./db/queries/refresh_tokens.js";
 import { config } from "./config.js";
@@ -18,6 +18,7 @@ export async function handlerCreateUser(req: Request, res: Response) {
       email: newUser.email,
       createdAt: newUser.createdAt,
       updatedAt: newUser.updatedAt,
+      isChirpyRed: newUser.isChirpyRed,
     });
   } catch (error) {
     console.error("DETAILED ERROR:", error);
@@ -61,6 +62,7 @@ export async function handlerLogin(req: Request, res: Response) {
       email: user.email,
       token: token,
       refreshToken: refreshToken,
+      isChirpyRed: user.isChirpyRed,
     });
   } catch (error) {
     console.error("DETAILED LOGIN ERROR:", error);
@@ -122,8 +124,29 @@ export async function handlerUpdateUser(req: Request, res: Response): Promise<vo
       createdAt: updatedUser.createdAt,
       updatedAt: updatedUser.updatedAt,
       email: updatedUser.email,
+      isChirpyRed: updatedUser.isChirpyRed,
     });
   } catch (error) {
     res.status(401).json({ error: "Unauthorized" });
+  }
+}
+
+export async function handlerPolkaWebhook(req: Request, res: Response): Promise<void> {
+  const { event, data } = req.body;
+
+  if (event !== "user.upgraded") {
+    res.status(204).send();
+    return;
+  }
+
+  try {
+    const updatedUser = await upgradeUserToChirpyRed(data.userId);
+    if (!updatedUser) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+    res.status(204).send();
+  } catch (error) {
+    res.status(404).json({ error: "User not found" });
   }
 }

@@ -6,7 +6,7 @@ import { config } from "./config.js";
 import { middlewareLogResponses, middlewareErrorHandler } from "./middleware.js";
 import { middlewareMetricsInc, handlerMetrics, handlerReset } from "./metrics.js";
 import { handlerCreateChirp, handlerGetChirps, handlerGetChirpById, handlerDeleteChirp } from "./chirps.js";
-import { handlerCreateUser, handlerLogin, handlerRefresh, handlerRevoke, handlerUpdateUser } from "./users.js";
+import { handlerCreateUser, handlerLogin, handlerRefresh, handlerRevoke, handlerUpdateUser, handlerPolkaWebhook } from "./users.js";
 
 const app = express();
 const PORT = config.port;
@@ -48,6 +48,10 @@ app.post("/api/revoke", (req: Request, res: Response, next: NextFunction) => {
 
 app.put("/api/users", (req: Request, res: Response, next: NextFunction) => {
   Promise.resolve(handlerUpdateUser(req, res)).catch(next);
+});
+
+app.post("/api/polka/webhooks", (req: Request, res: Response, next: NextFunction) => {
+  Promise.resolve(handlerPolkaWebhook(req, res)).catch(next);
 });
 
 app.post("/api/chirps", (req: Request, res: Response, next: NextFunction) => {
