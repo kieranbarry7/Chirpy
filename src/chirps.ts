@@ -7,36 +7,44 @@ import { config } from "./config.js";
 const PROFANE_WORDS = new Set(["kerfuffle", "sharbert", "fornax"]);
 
 export async function handlerCreateChirp(req: Request, res: Response): Promise<void> {
-  const token = getBearerToken(req);
-  const userId = validateJWT(token, config.jwtSecret);
+  try {
+    const token = getBearerToken(req);
+    const userId = validateJWT(token, config.jwtSecret);
 
-  const { body } = req.body;
+    const { body } = req.body;
 
-  if (typeof body !== "string" || body.length > 140) {
-    throw new BadRequestError("Chirp is too long. Max length is 140");
-  }
-
-  const words = body.split(" ");
-  const cleanedWords = words.map((word) => {
-    if (PROFANE_WORDS.has(word.toLowerCase())) {
-      return "****";
+    if (typeof body !== "string" || body.length > 140) {
+      throw new BadRequestError("Chirp is too long. Max length is 140");
     }
-    return word;
-  });
-  const cleanedBody = cleanedWords.join(" ");
 
-  const newChirp = await createChirp({
-    body: cleanedBody,
-    userId,
-  });
+    const words = body.split(" ");
+    const cleanedWords = words.map((word) => {
+      if (PROFANE_WORDS.has(word.toLowerCase())) {
+        return "****";
+      }
+      return word;
+    });
+    const cleanedBody = cleanedWords.join(" ");
 
-  res.status(201).json({
-    id: newChirp.id,
-    createdAt: newChirp.createdAt,
-    updatedAt: newChirp.updatedAt,
-    body: newChirp.body,
-    userId: newChirp.userId,
-  });
+    const newChirp = await createChirp({
+      body: cleanedBody,
+      userId,
+    });
+
+    res.status(201).json({
+      id: newChirp.id,
+      createdAt: newChirp.createdAt,
+      updatedAt: newChirp.updatedAt,
+      body: newChirp.body,
+      userId: newChirp.userId,
+    });
+  } catch (error) {
+    if (error instanceof BadRequestError) {
+      res.status(400).json({ error: error.message });
+      return;
+    }
+    res.status(401).json({ error: "Unauthorized" });
+  }
 }
 
 export async function handlerGetChirps(req: Request, res: Response): Promise<void> {
