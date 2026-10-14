@@ -1,18 +1,19 @@
 import { Request, Response } from "express";
 import { BadRequestError } from "./errors.js";
 import { createChirp, getChirps, getChirpById } from "./db/queries/chirps.js";
+import { getBearerToken, validateJWT } from "./auth.js";
+import { config } from "./config.js";
 
 const PROFANE_WORDS = new Set(["kerfuffle", "sharbert", "fornax"]);
 
 export async function handlerCreateChirp(req: Request, res: Response): Promise<void> {
-  const { body, userId } = req.body;
+  const token = getBearerToken(req);
+  const userId = validateJWT(token, config.jwtSecret);
+
+  const { body } = req.body;
 
   if (typeof body !== "string" || body.length > 140) {
     throw new BadRequestError("Chirp is too long. Max length is 140");
-  }
-
-  if (!userId) {
-    throw new BadRequestError("User ID is required");
   }
 
   const words = body.split(" ");
