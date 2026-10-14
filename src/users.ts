@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { createUser, getUserByEmail } from "./db/queries/users.js";
-import { hashPassword, checkPasswordHash, makeJWT, makeRefreshToken, getBearerToken } from "./auth.js";
+import { createUser, getUserByEmail, updateUser } from "./db/queries/users.js";
+import { hashPassword, checkPasswordHash, makeJWT, makeRefreshToken, getBearerToken, validateJWT } from "./auth.js";
 import { createRefreshToken, getRefreshToken, revokeRefreshToken } from "./db/queries/refresh_tokens.js";
 import { config } from "./config.js";
 
@@ -95,5 +95,35 @@ export async function handlerRevoke(req: Request, res: Response): Promise<void> 
     res.sendStatus(204);
   } catch (error) {
     res.status(400).json({ error: "Failed to revoke token" });
+  }
+}
+
+export async function handlerUpdateUser(req: Request, res: Response): Promise<void> {
+  try {
+    const token = getBearerToken(req);
+    const userId = validateJWT(token, config.jwtSecret);
+
+    const { email, password } = req.body;
+    if (!email || !password) {
+      res.status(400).json({ error: "Email and password are required" });
+      return;
+    }
+
+    const hashedPassword = await hashPassword(password);
+    const updatedUser = await updateUser(userId, email, hashedPassword);
+
+    if (!updatedUser) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+
+    res.status(200).json({
+      id: updatedUser.id,
+      createdAt: updatedUser.createdAt,
+      updatedAt: updatedUser.updatedAt,
+      email: updatedUser.email,
+    });
+  } catch (error) {
+    res.status(401).json({ error: "Unauthorized" });
   }
 }

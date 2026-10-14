@@ -6,7 +6,7 @@ import { config } from "./config.js";
 import { middlewareLogResponses, middlewareErrorHandler } from "./middleware.js";
 import { middlewareMetricsInc, handlerMetrics, handlerReset } from "./metrics.js";
 import { handlerCreateChirp, handlerGetChirps, handlerGetChirpById } from "./chirps.js";
-import { handlerCreateUser, handlerLogin, handlerRefresh, handlerRevoke } from "./users.js";
+import { handlerCreateUser, handlerLogin, handlerRefresh, handlerRevoke, handlerUpdateUser } from "./users.js";
 
 const app = express();
 const PORT = config.port;
@@ -40,6 +40,10 @@ app.post("/api/refresh", (req: Request, res: Response, next: NextFunction) => {
 
 app.post("/api/revoke", (req: Request, res: Response, next: NextFunction) => {
   Promise.resolve(handlerRevoke(req, res)).catch(next);
+});
+
+app.put("/api/users", (req: Request, res: Response, next: NextFunction) => {
+  Promise.resolve(handlerUpdateUser(req, res)).catch(next);
 });
 
 app.post("/api/chirps", (req: Request, res: Response, next: NextFunction) => {
