@@ -5,7 +5,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import { config } from "./config.js";
 import { middlewareLogResponses, middlewareErrorHandler } from "./middleware.js";
 import { middlewareMetricsInc, handlerMetrics, handlerReset } from "./metrics.js";
-import { handlerCreateChirp, handlerGetChirps, handlerGetChirpById } from "./chirps.js";
+import { handlerCreateChirp, handlerGetChirps, handlerGetChirpById, handlerDeleteChirp } from "./chirps.js";
 import { handlerCreateUser, handlerLogin, handlerRefresh, handlerRevoke, handlerUpdateUser } from "./users.js";
 
 const app = express();
@@ -30,6 +30,10 @@ app.get("/api/chirps", (req: Request, res: Response, next: NextFunction) => {
 
 app.get("/api/chirps/:chirpId", (req: Request, res: Response, next: NextFunction) => {
   Promise.resolve(handlerGetChirpById(req, res)).catch(next);
+});
+
+app.delete("/api/chirps/:chirpId", (req: Request, res: Response, next: NextFunction) => {
+  Promise.resolve(handlerDeleteChirp(req, res)).catch(next);
 });
 
 app.post("/api/login", handlerLogin);
