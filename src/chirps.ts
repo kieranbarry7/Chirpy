@@ -47,10 +47,31 @@ export async function handlerCreateChirp(req: Request, res: Response): Promise<v
   }
 }
 
+
 export async function handlerGetChirps(req: Request, res: Response): Promise<void> {
-  const allChirps = await getChirps();
+  let authorId = "";
+  const authorIdQuery = req.query.authorId;
+  if (typeof authorIdQuery === "string") {
+    authorId = authorIdQuery;
+  }
+
+  const sortParam = req.query.sort;
+  const sortOrder = sortParam === "desc" ? "desc" : "asc";
+
+  const allChirps = await getChirps(authorId || undefined);
+
+  allChirps.sort((a, b) => {
+    const dateA = new Date(a.createdAt).getTime();
+    const dateB = new Date(b.createdAt).getTime();
+    if (sortOrder === "desc") {
+      return dateB - dateA;
+    }
+    return dateA - dateB;
+  });
+
   res.status(200).json(allChirps);
 }
+
 
 export async function handlerGetChirpById(req: Request, res: Response): Promise<void> {
   const chirpId = req.params.chirpId;

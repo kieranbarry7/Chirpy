@@ -13,7 +13,14 @@ export async function createChirp({ body, userId }: { body: string; userId: stri
   return newChirp;
 }
 
-export async function getChirps() {
+export async function getChirps(authorId?: string) {
+  if (authorId) {
+    return await db
+      .select()
+      .from(chirps)
+      .where(eq(chirps.userId, authorId))
+      .orderBy(chirps.createdAt);
+  }
   return await db.select().from(chirps).orderBy(chirps.createdAt);
 }
 
